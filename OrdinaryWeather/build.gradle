@@ -20,6 +20,22 @@ android {
         minSdkVersion 17
         targetSdkVersion 17
     }
+
+    signingConfigs {
+        release {
+            storeFile file('/Users/Vic/.android/ordinary-weather.keystore')
+            storePassword "ordinarypassword"
+            keyAlias "ordinary_weather"
+            keyPassword "ordinarypassword"
+        }
+    }
+
+    buildTypes {
+        release {
+            debuggable false
+            signingConfig signingConfigs.release
+        }
+    }
 }
 
 dependencies {
