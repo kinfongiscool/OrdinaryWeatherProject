@@ -23,10 +23,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file('/Users/Vic/.android/ordinary-weather.keystore')
-            storePassword "ordinarypassword"
-            keyAlias "ordinary_weather"
-            keyPassword "ordinarypassword"
+            storeFile file(userKeystore)
+            storePassword userStorePassword
+            keyAlias userKeyAlias
+            keyPassword userKeyPassword
         }
     }
 
@@ -35,25 +35,19 @@ android {
             packageNameSuffix ".debug"
         }
 
-        signed_debug {
-            packageNameSuffix ".signed-debug"
-            runProguard true
-            proguardFile getDefaultProguardFile('/Users/Vic/.android/proguard-android.txt')
-        }
-
         signed_test_release {
             packageNameSuffix ".signed-release"
             debuggable false
             runProguard true
             signingConfig signingConfigs.release
-            proguardFile getDefaultProguardFile('/Users/Vic/.android/proguard-android.txt')
+            proguardFile getDefaultProguardFile('proguard-android.txt')
         }
 
         signed_release {
             debuggable false
             runProguard true
             signingConfig signingConfigs.release
-            proguardFile getDefaultProguardFile('/Users/Vic/.android/proguard-android.txt')
+            proguardFile getDefaultProguardFile('proguard-android-optimize.txt')
         }
     }
 }
