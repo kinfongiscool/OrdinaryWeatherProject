@@ -31,6 +31,16 @@ android {
     }
 
     buildTypes {
+        debug {
+            packageNameSuffix ".debug"
+        }
+
+        test_release {
+            debuggable false
+            packageNameSuffix ".release"
+            signingConfig signingConfigs.release
+        }
+
         release {
             debuggable false
             signingConfig signingConfigs.release
