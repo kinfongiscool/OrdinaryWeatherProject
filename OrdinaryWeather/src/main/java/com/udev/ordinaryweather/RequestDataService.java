@@ -42,9 +42,7 @@ public class RequestDataService extends Service implements LocationListener {
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
     private LocationManager mLocationManager;
-    private Boolean mRequestData;
     protected Location mLocation;
-    protected Forecast mForecast;
 
     private static final String TAG = "RequestDataService";
     private final String API_KEY = "5e07f9dc4b8932b18f19cea015e5512c";
@@ -56,7 +54,7 @@ public class RequestDataService extends Service implements LocationListener {
         @Override
         public void handleMessage(Message msg) {
             //todo:wait for forecast data to load
-            while (mRequestData) {
+            while (mLocation == null) {
                 synchronized (this) {
                     try {
                         wait(1000);

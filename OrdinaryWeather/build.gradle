@@ -35,15 +35,25 @@ android {
             packageNameSuffix ".debug"
         }
 
-        test_release {
-            debuggable false
-            packageNameSuffix ".release"
-            signingConfig signingConfigs.release
+        signed_debug {
+            packageNameSuffix ".signed-debug"
+            runProguard true
+            proguardFile getDefaultProguardFile('/Users/Vic/.android/proguard-android.txt')
         }
 
-        release {
+        signed_test_release {
+            packageNameSuffix ".signed-release"
             debuggable false
+            runProguard true
             signingConfig signingConfigs.release
+            proguardFile getDefaultProguardFile('/Users/Vic/.android/proguard-android.txt')
+        }
+
+        signed_release {
+            debuggable false
+            runProguard true
+            signingConfig signingConfigs.release
+            proguardFile getDefaultProguardFile('/Users/Vic/.android/proguard-android.txt')
         }
     }
 }
