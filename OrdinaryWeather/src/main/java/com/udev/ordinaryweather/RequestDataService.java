@@ -1,13 +1,13 @@
 package com.udev.ordinaryweather;
 
 import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.net.http.AndroidHttpClient;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -20,7 +20,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.json.JSONObject;
-import org.json.JSONStringer;
 
 import java.io.ByteArrayOutputStream;
 import java.text.DateFormat;
@@ -31,17 +30,9 @@ import java.util.TimeZone;
 
 /**
  * Created by Vic on 13/9/12.
+ * Service responsible for fetching data from Forecast.io
  */
 public class RequestDataService extends Service implements LocationListener {
-
-    public class BootBroadcastReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Intent startServiceIntent = new Intent(context, RequestDataService.class);
-            context.startService(startServiceIntent);
-        }
-    }
 
     @Override
     public void onLocationChanged(Location location) {
@@ -49,29 +40,53 @@ public class RequestDataService extends Service implements LocationListener {
     }
 
     @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+        if(provider.equals(LocationManager.GPS_PROVIDER)) {
+            switch (status) {
+                case LocationProvider.OUT_OF_SERVICE:
+                case LocationProvider.TEMPORARILY_UNAVAILABLE:
+                    removeGpsUpdates();
+                    break;
+                case LocationProvider.AVAILABLE:
+                    requestSingleGpsUpdate();
+                    break;
+            }
+        }
     }
 
     @Override
     public void onProviderEnabled(String s) {
-
+        requestSingleGpsUpdate();
     }
 
     @Override
     public void onProviderDisabled(String s) {
-
+        removeGpsUpdates();
     }
 
-    private Looper mServiceLooper;
-    private ServiceHandler mServiceHandler;
-    private LocationManager mLocationManager;
-    private JSONObject mData;
+    private void removeGpsUpdates() {
+        mLocationManager.removeUpdates(this);
+    }
 
-    private static final String TAG = "RequestDataService";
-    private final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
-    private final String API_URL = "https://api.forecast.io/forecast/";
-    private final String API_KEY = "5e07f9dc4b8932b18f19cea015e5512c";
+    private void requestSingleGpsUpdate() {
+        try {
+            mLocationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
+            mLocationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, mServiceLooper);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Class used for the client Binder.  Because we know this service always
+     * runs in the same process as its clients, we don't need to deal with IPC.
+     */
+    public class LocalBinder extends Binder {
+        RequestDataService getService() {
+            // Return this instance of LocalService so clients can call public methods
+            return RequestDataService.this;
+        }
+    }
 
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
@@ -79,7 +94,6 @@ public class RequestDataService extends Service implements LocationListener {
         }
         @Override
         public void handleMessage(Message msg) {
-            //todo:wait for forecast data to load
             while (mData == null) {
                 synchronized (this) {
                     try {
@@ -90,13 +104,21 @@ public class RequestDataService extends Service implements LocationListener {
                 }
             }
 
-            Intent intent = new Intent("DISPLAY_FORECAST");
-            intent.putExtra("data", mData.toString());
-            startActivity(intent);
-
             stopSelf(msg.arg1);
         }
     }
+
+    // Binder given to clients
+    private final IBinder mBinder = new LocalBinder();
+    private Looper mServiceLooper;
+    private ServiceHandler mServiceHandler;
+    private LocationManager mLocationManager;
+    private JSONObject mData;
+
+    private static final String TAG = "RequestDataService";
+    private final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+    private final String API_URL = "https://api.forecast.io/forecast/";
+    private final String API_KEY = "5e07f9dc4b8932b18f19cea015e5512c";
 
     @Override
     public void onCreate() {
@@ -106,25 +128,14 @@ public class RequestDataService extends Service implements LocationListener {
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
 
-        try {
-            mLocationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
-            mLocationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, mServiceLooper);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Message msg = mServiceHandler.obtainMessage();
-        msg.arg1 = startId;
-        mServiceHandler.sendMessage(msg);
-        return START_STICKY;
+        requestSingleGpsUpdate();
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        Message msg = mServiceHandler.obtainMessage();
+        mServiceHandler.sendMessage(msg);
+        return mBinder;
     }
 
     @Override

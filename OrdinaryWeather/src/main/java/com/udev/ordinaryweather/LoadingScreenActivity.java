@@ -19,7 +19,7 @@ public class LoadingScreenActivity extends Activity {
         setContentView(R.layout.activity_loading_screen);
 
         if (savedInstanceState == null) {
-            Intent intent = new Intent("ACTION_BOOT_COMPLETED");
+            Intent intent = new Intent("ACTION_WEATHER");
             ServiceConnection serviceConnection = new ServiceConnection() {
                 @Override
                 public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -31,7 +31,11 @@ public class LoadingScreenActivity extends Activity {
     
                 }
             };
-            bindService(intent, serviceConnection, BIND_NOT_FOREGROUND);
+
+            if(!bindService(intent, serviceConnection, BIND_NOT_FOREGROUND)) {
+                Log.e(TAG, "Failed to bind to existing service");
+
+            }
         } else {
             Log.i(TAG, "Success!");
         }

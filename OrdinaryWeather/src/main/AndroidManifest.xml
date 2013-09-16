@@ -30,11 +30,6 @@
 
         <service android:name=".RequestDataService"
             android:description="@string/service_description" />
-        <receiver android:name="com.udev.ordinaryweather.RequestDataService$BootBroadcastReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>
