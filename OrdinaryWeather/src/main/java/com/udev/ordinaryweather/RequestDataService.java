@@ -34,6 +34,10 @@ import java.util.TimeZone;
  */
 public class RequestDataService extends Service implements LocationListener {
 
+    public JSONObject getData() {
+        return mData;
+    }
+
     @Override
     public void onLocationChanged(Location location) {
         requestForecastObject(location);
@@ -127,13 +131,12 @@ public class RequestDataService extends Service implements LocationListener {
 
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
-
-        requestSingleGpsUpdate();
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         Message msg = mServiceHandler.obtainMessage();
+        requestSingleGpsUpdate();
         mServiceHandler.sendMessage(msg);
         return mBinder;
     }
