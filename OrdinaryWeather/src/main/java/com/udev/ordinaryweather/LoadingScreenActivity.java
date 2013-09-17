@@ -63,5 +63,4 @@ public class LoadingScreenActivity extends Activity {
         getMenuInflater().inflate(R.menu.loading_screen, menu);
         return true;
     }
-    
 }
