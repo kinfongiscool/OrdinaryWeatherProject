@@ -4,5 +4,6 @@
     <string name="app_name">Ordinary Weather</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="service_description">Background service for executing Forecast API requests</string>
 
 </resources>
