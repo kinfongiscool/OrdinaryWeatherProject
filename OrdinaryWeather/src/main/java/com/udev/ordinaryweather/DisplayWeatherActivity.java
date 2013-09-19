@@ -1,9 +1,11 @@
 package com.udev.ordinaryweather;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -52,15 +54,27 @@ public class DisplayWeatherActivity extends Activity {
         }
     };
 
+    public class DataBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i(TAG, "DataBroadcastReceiver.onReceive " + intent.getStringExtra("data"));
+        }
+    }
+
     private static final String TAG = "DisplayWeatherActivity";
 
     private boolean mBound = false;
     private Messenger mServiceMessenger;
+    private DataBroadcastReceiver dataBroadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fragment_container);
+
+        dataBroadcastReceiver = new DataBroadcastReceiver();
+        registerReceiver(dataBroadcastReceiver, new IntentFilter("android.intent.action.ACTION_DISPLAY_FORECAST"));
 
         Button button = (Button)findViewById(R.id.refresh_button);
         try {

@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.apache.http.HttpResponse;
@@ -119,10 +120,9 @@ public class RequestDataService extends Service implements LocationListener {
                 mData = new JSONObject(result);
                 Log.i(TAG, mData.toString());
 
-                Bundle data = new Bundle();
-                data.putString("data", mData.toString());
-
-                //todo:broadcast message
+                Intent intent = new Intent("android.intent.action.ACTION_DISPLAY_FORECAST");
+                intent.putExtra("data", mData.toString());
+                sendBroadcast(intent);
             }
         } catch(Exception e) {
             e.printStackTrace();

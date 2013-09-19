@@ -6,5 +6,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="service_description">Background service for executing Forecast API requests</string>
     <string name="refresh_button_text">Refresh</string>
+    <string name="broadcastreceiver_description">Receiver for broadcasts regarding receipt of weather data</string>
 
 </resources>
