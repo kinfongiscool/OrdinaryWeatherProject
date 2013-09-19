@@ -14,7 +14,9 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Messenger;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -33,6 +35,8 @@ import java.util.TimeZone;
  * Service responsible for fetching data from Forecast.io
  */
 public class RequestDataService extends Service implements LocationListener {
+
+    static final int REQUEST_DATA = 1;
 
     public JSONObject getData() {
         return mData;
@@ -71,15 +75,6 @@ public class RequestDataService extends Service implements LocationListener {
         mLocationManager.removeUpdates(this);
     }
 
-    private void requestSingleGpsUpdate() {
-        try {
-            mLocationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
-            mLocationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, mServiceLooper);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * Class used for the client Binder.  Because we know this service always
      * runs in the same process as its clients, we don't need to deal with IPC.
@@ -97,6 +92,18 @@ public class RequestDataService extends Service implements LocationListener {
         }
         @Override
         public void handleMessage(Message msg) {
+            switch(msg.what) {
+                case RequestDataService.REQUEST_DATA:
+                    Log.i(TAG, "ServiceHandler handleMessage: Message.what = " + msg.what);
+                    Toast.makeText(getApplicationContext(), "REQUEST_DATA", Toast.LENGTH_SHORT).show();
+                    requestSingleGpsUpdate();
+                    break;
+                default:
+                    Log.e(TAG, "Greetings from the future!!!");
+                    Log.i(TAG, "ServiceHandler handleMessage: no case for message " + msg.what);
+                    break;
+            }
+
             while (mData == null) {
                 synchronized (this) {
                     try {
@@ -111,37 +118,16 @@ public class RequestDataService extends Service implements LocationListener {
         }
     }
 
-    // Binder given to clients
-    private final IBinder mBinder = new LocalBinder();
-    private Looper mServiceLooper;
-    private ServiceHandler mServiceHandler;
-    private LocationManager mLocationManager;
-    private JSONObject mData;
-
-    private static final String TAG = "RequestDataService";
-    private final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
-    private final String API_URL = "https://api.forecast.io/forecast/";
-    private final String API_KEY = "5e07f9dc4b8932b18f19cea015e5512c";
-
-    @Override
-    public void onCreate() {
-        HandlerThread thread = new HandlerThread("ServiceStartArguments", Thread.MIN_PRIORITY);
-        thread.start();
-
-        mServiceLooper = thread.getLooper();
-        mServiceHandler = new ServiceHandler(mServiceLooper);
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        Message msg = mServiceHandler.obtainMessage();
-        mServiceHandler.sendMessage(msg);
-        return mBinder;
-    }
-
-    @Override
-    public void onDestroy() {
-
+    /**
+     * register with the LocationManager for a single GPS event
+     */
+    private void requestSingleGpsUpdate() {
+        try {
+            mLocationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
+            mLocationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, mServiceLooper);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void requestForecastObject(Location location) {
@@ -180,5 +166,40 @@ public class RequestDataService extends Service implements LocationListener {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, locale);
         sdf.setTimeZone(TimeZone.getTimeZone(locale.toString()));
         return API_URL + API_KEY + "/" + latitude.toString() + "," + longitude.toString() + "," + sdf.format(new Date());
+    }
+
+    // Binder given to clients
+    private final IBinder mBinder = new LocalBinder();
+    private Looper mServiceLooper;
+    private ServiceHandler mServiceHandler;
+    private Messenger mMessenger;
+    private LocationManager mLocationManager;
+    private JSONObject mData;
+
+    private static final String TAG = "RequestDataService";
+    private final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+    private final String API_URL = "https://api.forecast.io/forecast/";
+    private final String API_KEY = "5e07f9dc4b8932b18f19cea015e5512c";
+
+    @Override
+    public void onCreate() {
+        HandlerThread thread = new HandlerThread("ServiceStartArguments", Thread.MIN_PRIORITY);
+        thread.start();
+
+        mServiceLooper = thread.getLooper();
+        mServiceHandler = new ServiceHandler(mServiceLooper);
+        mMessenger = new Messenger(mServiceHandler);
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        Message msg = mServiceHandler.obtainMessage();
+        mServiceHandler.sendMessage(msg);
+        return mMessenger.getBinder();
+    }
+
+    @Override
+    public void onDestroy() {
+
     }
 }
