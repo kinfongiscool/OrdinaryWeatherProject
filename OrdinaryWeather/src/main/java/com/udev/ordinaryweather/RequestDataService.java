@@ -52,7 +52,6 @@ public class RequestDataService extends Service implements LocationListener {
                     removeGpsUpdates();
                     break;
                 case LocationProvider.AVAILABLE:
-                    requestSingleGpsUpdate();
                     break;
             }
         }
@@ -60,7 +59,7 @@ public class RequestDataService extends Service implements LocationListener {
 
     @Override
     public void onProviderEnabled(String s) {
-        requestSingleGpsUpdate();
+
     }
 
     @Override
@@ -136,7 +135,6 @@ public class RequestDataService extends Service implements LocationListener {
     @Override
     public IBinder onBind(Intent intent) {
         Message msg = mServiceHandler.obtainMessage();
-        requestSingleGpsUpdate();
         mServiceHandler.sendMessage(msg);
         return mBinder;
     }
