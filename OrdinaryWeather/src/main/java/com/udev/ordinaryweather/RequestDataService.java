@@ -7,7 +7,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.net.http.AndroidHttpClient;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -16,7 +15,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -37,10 +35,6 @@ import java.util.TimeZone;
 public class RequestDataService extends Service implements LocationListener {
 
     static final int REQUEST_DATA = 1;
-
-    public JSONObject getData() {
-        return mData;
-    }
 
     @Override
     public void onLocationChanged(Location location) {
@@ -75,43 +69,19 @@ public class RequestDataService extends Service implements LocationListener {
         mLocationManager.removeUpdates(this);
     }
 
-    /**
-     * Class used for the client Binder.  Because we know this service always
-     * runs in the same process as its clients, we don't need to deal with IPC.
-     */
-    public class LocalBinder extends Binder {
-        RequestDataService getService() {
-            // Return this instance of LocalService so clients can call public methods
-            return RequestDataService.this;
-        }
-    }
-
-    private final class ServiceHandler extends Handler {
-        public ServiceHandler(Looper looper) {
+    private final class ClientMessageHandler extends Handler {
+        public ClientMessageHandler(Looper looper) {
             super(looper);
         }
         @Override
         public void handleMessage(Message msg) {
             switch(msg.what) {
                 case RequestDataService.REQUEST_DATA:
-                    Log.i(TAG, "ServiceHandler handleMessage: Message.what = " + msg.what);
-                    Toast.makeText(getApplicationContext(), "REQUEST_DATA", Toast.LENGTH_SHORT).show();
                     requestSingleGpsUpdate();
                     break;
                 default:
-                    Log.e(TAG, "Greetings from the future!!!");
-                    Log.i(TAG, "ServiceHandler handleMessage: no case for message " + msg.what);
+                    Log.i(TAG, "ClientMessageHandler handleMessage: no case for message " + msg.what + " with Message.arg1 == " + msg.arg1);
                     break;
-            }
-
-            while (mData == null) {
-                synchronized (this) {
-                    try {
-                        wait(5000);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
             }
 
             stopSelf(msg.arg1);
@@ -124,7 +94,8 @@ public class RequestDataService extends Service implements LocationListener {
     private void requestSingleGpsUpdate() {
         try {
             mLocationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
-            mLocationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, mServiceLooper);
+            mLocationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, mLooper);
+            Log.i(TAG, "requestSingleGpsUpdate");
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -147,6 +118,11 @@ public class RequestDataService extends Service implements LocationListener {
 
                 mData = new JSONObject(result);
                 Log.i(TAG, mData.toString());
+
+                Bundle data = new Bundle();
+                data.putString("data", mData.toString());
+
+                //todo:broadcast message
             }
         } catch(Exception e) {
             e.printStackTrace();
@@ -168,10 +144,8 @@ public class RequestDataService extends Service implements LocationListener {
         return API_URL + API_KEY + "/" + latitude.toString() + "," + longitude.toString() + "," + sdf.format(new Date());
     }
 
-    // Binder given to clients
-    private final IBinder mBinder = new LocalBinder();
-    private Looper mServiceLooper;
-    private ServiceHandler mServiceHandler;
+    private Looper mLooper;
+    private ClientMessageHandler mClientMessageHandler;
     private Messenger mMessenger;
     private LocationManager mLocationManager;
     private JSONObject mData;
@@ -186,15 +160,13 @@ public class RequestDataService extends Service implements LocationListener {
         HandlerThread thread = new HandlerThread("ServiceStartArguments", Thread.MIN_PRIORITY);
         thread.start();
 
-        mServiceLooper = thread.getLooper();
-        mServiceHandler = new ServiceHandler(mServiceLooper);
-        mMessenger = new Messenger(mServiceHandler);
+        mLooper = thread.getLooper();
+        mClientMessageHandler = new ClientMessageHandler(mLooper);
+        mMessenger = new Messenger(mClientMessageHandler);
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        Message msg = mServiceHandler.obtainMessage();
-        mServiceHandler.sendMessage(msg);
         return mMessenger.getBinder();
     }
 
