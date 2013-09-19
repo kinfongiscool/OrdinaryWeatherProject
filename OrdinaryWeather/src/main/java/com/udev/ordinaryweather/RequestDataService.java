@@ -117,11 +117,11 @@ public class RequestDataService extends Service implements LocationListener {
 
                 String result = output.toString();
 
-                mData = new JSONObject(result);
-                Log.i(TAG, mData.toString());
+                JSONObject data = new JSONObject(result);
+                Log.i(TAG, data.toString());
 
                 Intent intent = new Intent("android.intent.action.ACTION_DISPLAY_FORECAST");
-                intent.putExtra("data", mData.toString());
+                intent.putExtra("data", data.toString());
                 sendBroadcast(intent);
             }
         } catch(Exception e) {
@@ -148,7 +148,6 @@ public class RequestDataService extends Service implements LocationListener {
     private ClientMessageHandler mClientMessageHandler;
     private Messenger mMessenger;
     private LocationManager mLocationManager;
-    private JSONObject mData;
 
     private static final String TAG = "RequestDataService";
     private final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";

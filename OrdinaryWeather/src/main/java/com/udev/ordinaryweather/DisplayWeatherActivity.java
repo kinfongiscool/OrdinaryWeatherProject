@@ -1,6 +1,9 @@
 package com.udev.ordinaryweather;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,9 +16,13 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewGroup;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class DisplayWeatherActivity extends Activity {
 
@@ -59,6 +66,11 @@ public class DisplayWeatherActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.i(TAG, "DataBroadcastReceiver.onReceive " + intent.getStringExtra("data"));
+            try {
+                mData = new JSONObject(intent.getStringExtra("data"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -67,26 +79,39 @@ public class DisplayWeatherActivity extends Activity {
     private boolean mBound = false;
     private Messenger mServiceMessenger;
     private DataBroadcastReceiver dataBroadcastReceiver;
+    private static JSONObject mData;
+
+    private class LoadingFragment extends Fragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            return inflater.inflate(R.layout.fragment_loading, container, false);
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fragment_container);
+        setContentView(R.layout.fragment_container);
 
         dataBroadcastReceiver = new DataBroadcastReceiver();
         registerReceiver(dataBroadcastReceiver, new IntentFilter("android.intent.action.ACTION_DISPLAY_FORECAST"));
 
-        Button button = (Button)findViewById(R.id.refresh_button);
-        try {
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    requestWeatherData();
-                }
-            });
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
+        LoadingFragment fragment = new LoadingFragment();
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager
+                .beginTransaction()
+                .add(R.id.fragment_container, fragment);
+        fragmentTransaction.commit();
     }
 
     @Override
