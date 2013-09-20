@@ -118,7 +118,7 @@ public class DisplayWeatherActivity extends Activity {
 
             getFragmentManager()
                 .beginTransaction()
-                .show(new DisplayCurrentFragment())
+                .replace(R.id.fragment_container, new DisplayCurrentFragment())
             .commit();
         }
     }
