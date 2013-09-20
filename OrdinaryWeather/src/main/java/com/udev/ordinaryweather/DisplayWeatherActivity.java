@@ -20,9 +20,15 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class DisplayWeatherActivity extends Activity {
 
@@ -61,6 +67,44 @@ public class DisplayWeatherActivity extends Activity {
         }
     };
 
+    private static void updateDisplay(Activity activity) {
+        try {
+            JSONObject currentForecast = mData.getJSONObject("currently");
+            Long time = currentForecast.getLong("time");
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+            Date formattedTime = new Date();
+
+            try {
+                formattedTime = format.parse(time.toString());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            String[] conditions = new String[]{
+                    "Date: " + formattedTime.toString(),
+                    stringValueForKey(currentForecast, "summary", "Summary"),
+                    stringValueForKey(currentForecast, "precipType", "Precipitation Type"),
+                    stringValueForKey(currentForecast, "temperature", "Temperature"),
+                    stringValueForKey(currentForecast, "apparentTemperature", "Feels like"),
+                    stringValueForKey(currentForecast, "dewPoint", "Dew Point"),
+                    stringValueForKey(currentForecast, "windSpeed", "Wind Speed"),
+                    stringValueForKey(currentForecast, "windBearing", "Wind Bearing"),
+                    stringValueForKey(currentForecast, "cloudCover", "Cloud Cover"),
+                    stringValueForKey(currentForecast, "humidity", "Humidity"),
+                    stringValueForKey(currentForecast, "pressure", "Pressure"),
+                    stringValueForKey(currentForecast, "visibility", "Visibility"),
+                    stringValueForKey(currentForecast, "ozone", "Ozone")
+            };
+
+            ArrayAdapter adapter = new ArrayAdapter<String>(activity.getApplicationContext(), R.layout.weather_info, conditions);
+            ListView listView = (ListView)activity.findViewById(R.id.weather_info_list);
+            listView.setAdapter(adapter);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     public class DataBroadcastReceiver extends BroadcastReceiver {
 
         @Override
@@ -71,6 +115,11 @@ public class DisplayWeatherActivity extends Activity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+
+            getFragmentManager()
+                .beginTransaction()
+                .show(new DisplayCurrentFragment())
+            .commit();
         }
     }
 
@@ -102,19 +151,46 @@ public class DisplayWeatherActivity extends Activity {
         }
     }
 
+    public static class DisplayCurrentFragment extends Fragment {
+        public DisplayCurrentFragment() {
+            super();
+        }
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+        }
+
+        @Override
+        public void onStart() {
+            super.onStart();
+
+            updateDisplay(getActivity());
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            return inflater.inflate(R.layout.fragment_display_current, container, false);
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_container);
+        setContentView(R.layout.activty_fragment_container);
 
         dataBroadcastReceiver = new DataBroadcastReceiver();
         registerReceiver(dataBroadcastReceiver, new IntentFilter("android.intent.action.ACTION_DISPLAY_FORECAST"));
 
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager
-                .beginTransaction()
-                .add(R.id.fragment_container, new LoadingFragment());
-        fragmentTransaction.commit();
+        getFragmentManager()
+            .beginTransaction()
+            .add(R.id.fragment_container, new LoadingFragment())
+        .commit();
     }
 
     @Override
@@ -138,5 +214,20 @@ public class DisplayWeatherActivity extends Activity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.loading_screen, menu);
         return true;
+    }
+
+    private static String stringValueForKey(JSONObject obj, String key) {
+        try {
+            return obj.getString(key);
+        } catch(JSONException e) {
+            e.printStackTrace();
+        }
+
+        return "None";
+    }
+
+    private static String stringValueForKey(JSONObject obj, String key, String label) {
+
+        return label + ": " + stringValueForKey(obj, key);
     }
 }
