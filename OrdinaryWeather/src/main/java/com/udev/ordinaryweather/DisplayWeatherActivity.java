@@ -106,11 +106,10 @@ public class DisplayWeatherActivity extends Activity {
         dataBroadcastReceiver = new DataBroadcastReceiver();
         registerReceiver(dataBroadcastReceiver, new IntentFilter("android.intent.action.ACTION_DISPLAY_FORECAST"));
 
-        LoadingFragment fragment = new LoadingFragment();
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager
                 .beginTransaction()
-                .add(R.id.fragment_container, fragment);
+                .add(R.id.fragment_container, new LoadingFragment());
         fragmentTransaction.commit();
     }
 
