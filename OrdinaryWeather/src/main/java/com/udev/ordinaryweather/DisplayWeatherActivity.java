@@ -3,7 +3,6 @@ package com.udev.ordinaryweather;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -26,11 +25,10 @@ import android.widget.ListView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class DisplayWeatherActivity extends Activity {
+public class DisplayWeatherActivity extends Activity
+        implements FragmentManager.OnBackStackChangedListener {
 
     public void requestWeatherData() {
         if (!mBound) {
@@ -70,15 +68,7 @@ public class DisplayWeatherActivity extends Activity {
     private static void updateDisplay(Activity activity) {
         try {
             JSONObject currentForecast = mData.getJSONObject("currently");
-            Long time = currentForecast.getLong("time");
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
             Date formattedTime = new Date();
-
-            try {
-                formattedTime = format.parse(time.toString());
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
 
             String[] conditions = new String[]{
                     "Date: " + formattedTime.toString(),
@@ -100,6 +90,8 @@ public class DisplayWeatherActivity extends Activity {
             ListView listView = (ListView)activity.findViewById(R.id.weather_info_list);
             listView.setAdapter(adapter);
 
+        } catch (NullPointerException e) {
+            e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -117,9 +109,9 @@ public class DisplayWeatherActivity extends Activity {
             }
 
             getFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, new DisplayCurrentFragment())
-            .commit();
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, new DisplayCurrentFragment())
+                    .commit();
         }
     }
 
@@ -136,11 +128,6 @@ public class DisplayWeatherActivity extends Activity {
         }
 
         @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-        }
-
-        @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             return inflater.inflate(R.layout.fragment_loading, container, false);
         }
@@ -148,6 +135,7 @@ public class DisplayWeatherActivity extends Activity {
         @Override
         public void onPause() {
             super.onPause();
+            Log.i(TAG, "LoadingFragment.onPause");
         }
     }
 
@@ -157,25 +145,14 @@ public class DisplayWeatherActivity extends Activity {
         }
 
         @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-        }
-
-        @Override
         public void onStart() {
             super.onStart();
-
             updateDisplay(getActivity());
         }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             return inflater.inflate(R.layout.fragment_display_current, container, false);
-        }
-
-        @Override
-        public void onPause() {
-            super.onPause();
         }
     }
 
@@ -188,9 +165,10 @@ public class DisplayWeatherActivity extends Activity {
         registerReceiver(dataBroadcastReceiver, new IntentFilter("android.intent.action.ACTION_DISPLAY_FORECAST"));
 
         getFragmentManager()
-            .beginTransaction()
-            .add(R.id.fragment_container, new LoadingFragment())
-        .commit();
+                .beginTransaction()
+                .add(R.id.fragment_container, new LoadingFragment())
+                .addToBackStack(null)
+                .commit();
     }
 
     @Override
@@ -214,6 +192,12 @@ public class DisplayWeatherActivity extends Activity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.loading_screen, menu);
         return true;
+    }
+
+    @Override
+    public void onBackStackChanged() {
+        // When the back stack changes, invalidate the options menu (action bar).
+        invalidateOptionsMenu();
     }
 
     private static String stringValueForKey(JSONObject obj, String key) {
