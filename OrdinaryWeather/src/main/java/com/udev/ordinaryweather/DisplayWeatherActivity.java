@@ -81,7 +81,11 @@ public class DisplayWeatherActivity extends Activity {
     private DataBroadcastReceiver dataBroadcastReceiver;
     private static JSONObject mData;
 
-    private class LoadingFragment extends Fragment {
+    public static class LoadingFragment extends Fragment {
+        public LoadingFragment() {
+            super();
+        }
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
