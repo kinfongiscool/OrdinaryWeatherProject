@@ -8,8 +8,7 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".LoadingScreenActivity">
 
-    <fragment android:id="@+id/fragment_container"
-        android:name="com.udev.ordinaryweather.DisplayWeatherActivity$LoadingFragment"
+    <FrameLayout android:id="@+id/fragment_container"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" />
 
