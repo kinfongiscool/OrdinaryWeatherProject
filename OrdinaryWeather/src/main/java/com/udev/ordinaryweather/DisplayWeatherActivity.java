@@ -1,7 +1,6 @@
 package com.udev.ordinaryweather;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -15,10 +14,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -97,94 +93,60 @@ public class DisplayWeatherActivity extends Activity
         }
     }
 
-    public class DataBroadcastReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.i(TAG, "DataBroadcastReceiver.onReceive " + intent.getStringExtra("data"));
-            try {
-                mData = new JSONObject(intent.getStringExtra("data"));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            getFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, new DisplayCurrentFragment())
-                    .commit();
-        }
-    }
+//    public class DataBroadcastReceiver extends BroadcastReceiver {
+//
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            Log.i(TAG, "DataBroadcastReceiver.onReceive " + intent.getStringExtra("data"));
+//            try {
+//                mData = new JSONObject(intent.getStringExtra("data"));
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//
+//            getFragmentManager()
+//                    .beginTransaction()
+//                    .replace(R.id.fragment_container, new DisplayWeatherFragment())
+//                    .commit();
+//        }
+//    }
 
     private static final String TAG = "DisplayWeatherActivity";
 
     private boolean mBound = false;
     private Messenger mServiceMessenger;
-    private DataBroadcastReceiver dataBroadcastReceiver;
+//    private DataBroadcastReceiver dataBroadcastReceiver;
     private static JSONObject mData;
 
-    public static class LoadingFragment extends Fragment {
-        public LoadingFragment() {
-            super();
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_loading, container, false);
-        }
-
-        @Override
-        public void onPause() {
-            super.onPause();
-            Log.i(TAG, "LoadingFragment.onPause");
-        }
-    }
-
-    public static class DisplayCurrentFragment extends Fragment {
-        public DisplayCurrentFragment() {
-            super();
-        }
-
-        @Override
-        public void onStart() {
-            super.onStart();
-            updateDisplay(getActivity());
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_display_current, container, false);
-        }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activty_fragment_container);
-
-        dataBroadcastReceiver = new DataBroadcastReceiver();
-        registerReceiver(dataBroadcastReceiver, new IntentFilter("android.intent.action.ACTION_DISPLAY_FORECAST"));
-
-        getFragmentManager()
-                .beginTransaction()
-                .add(R.id.fragment_container, new LoadingFragment())
-                .addToBackStack(null)
-                .commit();
-    }
+//    @Override
+//    protected void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//        setContentView(R.layout.activty_fragment_container);
+//
+//        dataBroadcastReceiver = new DataBroadcastReceiver();
+//        registerReceiver(dataBroadcastReceiver, new IntentFilter("android.intent.action.ACTION_DISPLAY_FORECAST"));
+//
+//        getFragmentManager()
+//                .beginTransaction()
+//                .add(R.id.fragment_container, new LoadingFragment())
+//                .addToBackStack(null)
+//                .commit();
+//    }
 
     @Override
     protected void onStart() {
-        super.onStart();
-        Intent intent = new Intent(this, RequestDataService.class);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+//        super.onStart();
+//        Intent intent = new Intent(this, RequestDataService.class);
+//        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onStop() {
-        super.onStop();
-        if (mBound) {
-            unbindService(mConnection);
-            mBound = false;
-        }
+//        super.onStop();
+//        if (mBound) {
+//            unbindService(mConnection);
+//            mBound = false;
+//        }
     }
 
     @Override
