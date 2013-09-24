@@ -24,9 +24,12 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.ACTION_DISPLAY_FORECAST" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".ListDataActivity"
+            android:label="@string/app_name" >
         </activity>
         <activity
             android:name=".DisplayWeatherActivity"
@@ -39,9 +42,6 @@
 
         <service android:name=".RequestDataService"
             android:description="@string/service_description" />
-
-        <receiver android:name=".DisplayWeatherActivity$DataBroadcastReceiver"
-            android:description="@string/broadcastreceiver_description"/>
     </application>
 
 </manifest>

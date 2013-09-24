@@ -117,7 +117,7 @@ public class RequestDataService extends Service implements LocationListener {
                 String result = output.toString();
 
                 JSONObject data = new JSONObject(result);
-                Log.i(TAG, data.toString());
+//                Log.i(TAG, data.toString());
 
                 Intent intent = new Intent("android.intent.action.ACTION_DISPLAY_FORECAST");
                 intent.putExtra("data", data.toString());

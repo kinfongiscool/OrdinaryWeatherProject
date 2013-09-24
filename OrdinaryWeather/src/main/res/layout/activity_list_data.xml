@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<FrameLayout android:name="@android:id/list"
-    android:id="@+id/weather_info_list"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
-
-</FrameLayout>
+<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/data_list"
+    android:name="com.udev.ordinaryweather.ListDataFragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ListDataActivity"
+    tools:layout="@android:layout/list_content" />

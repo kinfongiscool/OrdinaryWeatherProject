@@ -8,4 +8,9 @@
     <string name="refresh_button_text">Refresh</string>
     <string name="broadcastreceiver_description">Receiver for broadcasts regarding receipt of weather data</string>
 
+    <string name="list_option_currently">Currently</string>
+    <string name="list_option_minutely">Minutely</string>
+    <string name="list_option_hourly">Hourly</string>
+    <string name="list_option_daily">Daily</string>
+
 </resources>

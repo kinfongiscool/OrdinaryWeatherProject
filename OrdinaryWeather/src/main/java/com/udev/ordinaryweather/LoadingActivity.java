@@ -1,6 +1,5 @@
 package com.udev.ordinaryweather;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -14,9 +13,6 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Created by Vic on 13/9/23.
@@ -62,31 +58,19 @@ public class LoadingActivity extends FragmentActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i(TAG, "DataBroadcastReceiver.onReceive " + intent.getStringExtra("data"));
-            try {
-                mData = new JSONObject(intent.getStringExtra("data"));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-//            setContentView(R.layout.activity_list_data);
-            Bundle arguments = new Bundle();
-            arguments.putString("data", intent.getStringExtra("data"));
-            ListDataFragment fragment = new ListDataFragment();
-            fragment.setArguments(arguments);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.weather_info_list, fragment)
-                    .commit();
+//            Log.i(TAG, "DataBroadcastReceiver.onReceive " + intent.getStringExtra("data"));
+            Intent i = new Intent(getApplicationContext(), ListDataActivity.class);
+            i.putExtra("data", intent.getStringExtra("data"));
+            startActivity(i);
         }
     }
 
     private static final String TAG = "LoadingActivity";
 
-    private boolean mTwoPane = false;
     private boolean mBound = false;
     private Messenger mServiceMessenger;
     private DataBroadcastReceiver dataBroadcastReceiver;
-    private static JSONObject mData;
+//    private static JSONObject mData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,5 +95,7 @@ public class LoadingActivity extends FragmentActivity {
             unbindService(mConnection);
             mBound = false;
         }
+
+
     }
 }
